@@ -1,0 +1,117 @@
+------
+
+# 강원대학교
+
+```{r normaldis, echo=TRUE, prompt=TRUE, comment=NA, format="html"}
+library(knitr)
+a = rnorm(1000)
+hist(a, col='orange')
+```
+```{r echo=FALSE, comment=NA, error = FALSE, warning=FALSE, message=FALSE}
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# 모집인원 pie chart
+
+a <- read.csv('./abc2.csv')
+
+a1 <- a %>% filter(schoolindex == 10 & year == 2018)
+
+a2 <- gather(a1,,,-1)
+
+a3 <- a2 %>% filter(key == 'a' | key == 'b')
+
+bp <- ggplot(a3,aes(x='',y=value,fill=key)) + geom_bar(width = 1, stat = 'identity')
+
+pie <- bp+coord_polar('y',start=0)
+
+blank_theme <- theme_minimal()+
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.border = element_blank(),
+    panel.grid=element_blank(),
+    axis.ticks = element_blank(),
+    plot.title=element_text(size=14, face="bold")
+  )
+
+
+pie <- pie + scale_fill_grey() + blank_theme +  theme(axis.text.x=element_blank())
+
+# table plot
+
+tp <- read.csv('./abc.csv')
+tp1 <- tp %>% filter(schoolindex == 1 & year == 2018) %>% select(level,leet,gpa,lang,doc,essay,interview,sum)
+tp1[is.na(tp1)] <- 0
+
+library(gridExtra)
+
+# pie 랑 table 합체 
+
+grid.arrange(pie,tableGrob(tp1, rows = NULL),nrow=1)
+```
+
+### 모집인원					기본계획
+
+| 이미지  | 테이블  |
+| ---- | ---- |
+|   <img src = "C:\Users\GomGuard\Downloads\paper-3139127.jpg" />   |   <img src = "C:\Users\GomGuard\Downloads\paper-3139127.jpg"  />   |
+
+
+#### 기타
+
+```
+가나다라마바사
+아자차카타파하
+```
+
+
+
+
+#### 남여 비율
+
+차트
+
+
+
+#### 자교 비율
+
+차트
+
+
+
+#### 외국대학 출신 학생수
+
+차트
+
+
+
+#### 연령 비율
+
+차트
+
+
+
+#### 문이과 비율
+
+차트
+
+
+
+#### 경쟁률
+
+차트
+
+
+
+#### 총 출신 학부 현황 (전체)
+
+차트
+
+
+
+#### 4년치 출신 학부현황
+
+차트
