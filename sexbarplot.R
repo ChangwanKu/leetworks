@@ -21,3 +21,6 @@ ggplot(a3,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', positi
 #r studio에서 작성한 걸 바로 commit 하는 것을 테스트해보자 
 
 #다시해보자 
+
+
+# 수정중 
