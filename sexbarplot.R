@@ -24,3 +24,6 @@ ggplot(a3,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', positi
 
 
 # 수정중 
+
+
+#내 코드가 바뀐걸 인식해라 병신아
