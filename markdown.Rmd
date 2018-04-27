@@ -1,6 +1,6 @@
 ------
 
-# 강원대학교 aaaaaaaaaaaaaaaa
+# 강원대학교 aaaaaaaaaaaaaaaabbbbbbbbbb
 output : 
 ```{r normaldis, echo=TRUE, prompt=TRUE, comment=NA, format="html"}
 library(knitr)
