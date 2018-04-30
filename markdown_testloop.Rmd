@@ -79,8 +79,21 @@ insert_chart_application <- function(school_index, year_value){
   grid.arrange(pie,tableGrob(selected_data_table, rows = NULL),nrow=1)
 }
 
+insert_chart_foreign <- function(school_index, year_value){
+     cprint("외국대학 출신 학생 수", subject_print_type)
+  hr()
+
+  foreign <- raw_data_foreign %>% filter(schoolindex == school_index) %>% select(selected_colname_foreign)
+  foreign <- gather(foreign)
+
+  p <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity')
+  p + theme_minimal()
+
+  
+}
+
 insert_school_name <- function(school_index, year_value){
-  school_name <- c("강원대","서울대")
+  school_name <- c("강원대", "건국대", "경북대", "경희대", "고려대", "동아대", "부산대", "서강대", "서울대", "서울시립대", "성균관대", "아주대", "연세대", "영남대", "원광대", "이화여대", "인하대", "전남대", "전북대", "제주대", "중앙대", "충남대", "충북대", "한국외대", "한양대")
   cprint(school_name[school_index], school_name_print_type)
   hr()
   
@@ -108,37 +121,34 @@ subject_print_type <- "h3"
 
 colname_prefix_sex <- c("m","w")
 colname_prefix_myschool <- c("m","o")
+colname_prefix_foreign <- c("f")
 year_prefix <- as.numeric(substr(year_value,3,4)) - 4
 selected_colname_sex <- NULL
 selected_colname_myschool <- NULL
+selected_colname_foreign <- NULL
 for (i in 0:3) {
   selected_colname_sex <- c(selected_colname_sex, paste(colname_prefix_sex,year_prefix+i, sep=""))
   selected_colname_myschool <- c(selected_colname_myschool, paste(colname_prefix_myschool,year_prefix+i, sep=""))
-  
+  selected_colname_foreign   <- c(selected_colname_foreign, paste(colname_prefix_foreign,year_prefix+i, sep=""))
 }
   
 # 본문 시작
   raw_data_pie <- read.csv('./rawdatas/abc2.csv')
   raw_data_table <- read.csv('./rawdatas/abc.csv')
-  raw_data_sex <- read.csv('./rawdatas/sex.csv')
-  names(raw_data_sex)[1] <- "schoolindex"
-
-  raw_data_myschool <- read.csv('./rawdatas/myschool.csv')
-  names(raw_data_myschool)[1] <- "schoolindex"
-
+  raw_data_sex <- read.csv('./rawdatas/sex.csv')%>% rename(schoolindex = 癤퓋choolindex)
+  raw_data_myschool <- read.csv('./rawdatas/myschool.csv')%>% rename(schoolindex = 癤퓋choolindex)
+  raw_data_foreign <- read.csv('./rawdatas/foreign.csv')  %>% rename(schoolindex = 癤퓋choolindex)
   
-  insert_school_name(school_index, year_value)
+  for (school_index in 1:21) {
+    insert_school_name(school_index, year_value)
   insert_chart_application(school_index, year_value)
-  insert_chart_sex(school_index, year_value)
-  insert_chart_myschool(school_index, year_value)  
+  print(insert_chart_sex(school_index, year_value))
+  print(insert_chart_myschool(school_index, year_value))
+  print(insert_chart_foreign(school_index, year_value))
+  }
+  
+  
 
-  
-  school_index <- school_index +1  
-  insert_school_name(school_index, year_value)
-  insert_chart_application(school_index, year_value)
-  insert_chart_sex(school_index, year_value)
-  insert_chart_myschool(school_index, year_value)  
-  
   
   
 ```
