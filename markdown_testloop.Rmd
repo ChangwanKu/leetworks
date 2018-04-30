@@ -30,8 +30,8 @@ hr <- function(){
 insert_chart_sex <- function(school_index, year_value){
   cprint("남녀 비율", subject_print_type)
   hr()
-  
-  selected_data_sex <- raw_data_sex %>% filter(schoolindex == school_index) %>% select(m14, w14, m15, w15, m16, w16, m17, w17)
+
+  selected_data_sex <- raw_data_sex %>% filter(schoolindex == school_index) %>% select(selected_colname_sex)
   selected_data_sex <- gather(selected_data_sex)
   selected_data_sex <- selected_data_sex %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
   ggplot(selected_data_sex,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
@@ -42,7 +42,7 @@ insert_chart_myschool <- function(school_index, year_value){
   cprint("자교 비율", subject_print_type)
   hr()
   
-  selected_data_myschool <- raw_data_myschool %>% filter(schoolindex == school_index) %>% select(m14, o14, m15, o15, m16, o16, m17, o17)
+  selected_data_myschool <- raw_data_myschool %>% filter(schoolindex == school_index) %>% select(selected_colname_myschool)
   selected_data_myschool <- gather(selected_data_myschool)
   selected_data_myschool <- selected_data_myschool %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
   ggplot(selected_data_myschool,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
@@ -106,7 +106,17 @@ year_value <- 2018
 school_name_print_type <- "h1"
 subject_print_type <- "h3"
 
-
+colname_prefix_sex <- c("m","w")
+colname_prefix_myschool <- c("m","o")
+year_prefix <- as.numeric(substr(year_value,3,4)) - 4
+selected_colname_sex <- NULL
+selected_colname_myschool <- NULL
+for (i in 0:3) {
+  selected_colname_sex <- c(selected_colname_sex, paste(colname_prefix_sex,year_prefix+i, sep=""))
+  selected_colname_myschool <- c(selected_colname_myschool, paste(colname_prefix_myschool,year_prefix+i, sep=""))
+  
+}
+  
 # 본문 시작
   raw_data_pie <- read.csv('./rawdatas/abc2.csv')
   raw_data_table <- read.csv('./rawdatas/abc.csv')
