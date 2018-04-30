@@ -21,15 +21,11 @@ cprint <- function(contents, type){
   } else{
     cat(sprintf("%s", contents))  
   }
-}
-hr <- function(){
   cat("<hr>")
 }
 
-
 insert_chart_application <- function(school_index, year_value){
-   cprint("모집인원 | 기본계획", subject_print_type)
-  hr()
+  cprint("모집인원 | 기본계획", subject_print_type)
   
   # 모집인원 pie chart
   selected_data_pie <- raw_data_pie %>% filter(schoolindex == school_index & year == year_value)
@@ -54,9 +50,9 @@ insert_chart_application <- function(school_index, year_value){
   }else{
     raw_data_table <- raw_data_table_part2
   }
+  
   selected_data_table <- raw_data_table %>% filter(schoolindex == school_index & year == year_value) %>%   select(level,leet,gpa,lang,doc,essay,interview,sum)
   selected_data_table[is.na(selected_data_table)] <- 0
-  
   
   # pie 랑 table 결합 
   grid.arrange(pie,tableGrob(selected_data_table, rows = NULL),nrow=1)
@@ -65,10 +61,8 @@ insert_chart_application <- function(school_index, year_value){
 # 남녀 비율
 insert_chart_sex <- function(school_index, year_value){
   cprint("남녀 비율", subject_print_type)
-  hr()
 
-  selected_data_sex <- raw_data_sex %>% filter(schoolindex == school_index) %>% select(selected_colname_sex)
-  selected_data_sex <- gather(selected_data_sex)
+  selected_data_sex <- gather(raw_data_sex %>% filter(schoolindex == school_index) %>% select(selected_colname_sex))
   selected_data_sex <- selected_data_sex %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
   ggplot(selected_data_sex,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
 }
@@ -76,39 +70,29 @@ insert_chart_sex <- function(school_index, year_value){
 # 자교 비율
 insert_chart_myschool <- function(school_index, year_value){
   cprint("자교 비율", subject_print_type)
-  hr()
-  
-  selected_data_myschool <- raw_data_myschool %>% filter(schoolindex == school_index) %>% select(selected_colname_myschool)
-  selected_data_myschool <- gather(selected_data_myschool)
+
+  selected_data_myschool <- gather(raw_data_myschool %>% filter(schoolindex == school_index) %>% select(selected_colname_myschool))
   selected_data_myschool <- selected_data_myschool %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
   ggplot(selected_data_myschool,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
 }
 
 insert_chart_foreign <- function(school_index, year_value){
-     cprint("외국대학 출신 학생 수", subject_print_type)
-  hr()
-
-  foreign <- raw_data_foreign %>% filter(schoolindex == school_index) %>% select(selected_colname_foreign)
-  foreign <- gather(foreign)
-
+  cprint("외국대학 출신 학생 수", subject_print_type)
+  
+  foreign <- gather(raw_data_foreign %>% filter(schoolindex == school_index) %>% select(selected_colname_foreign))
+  
   p <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity')
   p + theme_minimal()
 
-  
 }
 
 insert_school_name <- function(school_index, year_value){
   school_name <- c("강원대", "건국대", "경북대", "경희대", "고려대", "동아대", "부산대", "서강대", "서울대", "서울시립대", "성균관대", "아주대", "연세대", "영남대", "원광대", "이화여대", "인하대", "전남대", "전북대", "제주대", "중앙대", "충남대", "충북대", "한국외대", "한양대")
   cprint(school_name[school_index], school_name_print_type)
-  hr()
-  
-  # 모집인원, 기본계획 제목
+
 }
 
 ```
-
-
-
 
 ```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
 
@@ -138,9 +122,9 @@ for (i in 0:3) {
 }
   
 # 본문 시작
-  raw_data_pie <- read.csv('./rawdatas/abc2.csv')
-  raw_data_table_part1 <- read.csv('./rawdatas/abc_part1.csv')
-  raw_data_table_part2 <- read.csv('./rawdatas/abc_part2.csv')
+  raw_data_pie <- read.csv('./rawdatas/application.csv')
+  raw_data_table_part1 <- read.csv('./rawdatas/reflection_part1.csv')
+  raw_data_table_part2 <- read.csv('./rawdatas/reflection_part2.csv')
   raw_data_sex <- read.csv('./rawdatas/sex.csv')%>% rename(schoolindex = 癤퓋choolindex)
   raw_data_myschool <- read.csv('./rawdatas/myschool.csv')%>% rename(schoolindex = 癤퓋choolindex)
   raw_data_foreign <- read.csv('./rawdatas/foreign.csv')  %>% rename(schoolindex = 癤퓋choolindex)
@@ -148,10 +132,10 @@ for (i in 0:3) {
   
   for (school_index in 1:25) {
     insert_school_name(school_index, year_value)
-  insert_chart_application(school_index, year_value)
-  print(insert_chart_sex(school_index, year_value))
-  print(insert_chart_myschool(school_index, year_value))
-  print(insert_chart_foreign(school_index, year_value))
+    insert_chart_application(school_index, year_value)
+    print(insert_chart_sex(school_index, year_value))
+    print(insert_chart_myschool(school_index, year_value))
+    print(insert_chart_foreign(school_index, year_value))
   }
   
   
