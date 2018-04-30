@@ -26,27 +26,6 @@ hr <- function(){
   cat("<hr>")
 }
 
-# 남녀 비율
-insert_chart_sex <- function(school_index, year_value){
-  cprint("남녀 비율", subject_print_type)
-  hr()
-
-  selected_data_sex <- raw_data_sex %>% filter(schoolindex == school_index) %>% select(selected_colname_sex)
-  selected_data_sex <- gather(selected_data_sex)
-  selected_data_sex <- selected_data_sex %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
-  ggplot(selected_data_sex,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
-}
-
-# 자교 비율
-insert_chart_myschool <- function(school_index, year_value){
-  cprint("자교 비율", subject_print_type)
-  hr()
-  
-  selected_data_myschool <- raw_data_myschool %>% filter(schoolindex == school_index) %>% select(selected_colname_myschool)
-  selected_data_myschool <- gather(selected_data_myschool)
-  selected_data_myschool <- selected_data_myschool %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
-  ggplot(selected_data_myschool,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
-}
 
 insert_chart_application <- function(school_index, year_value){
    cprint("모집인원 | 기본계획", subject_print_type)
@@ -70,13 +49,39 @@ insert_chart_application <- function(school_index, year_value){
   pie <- pie + scale_fill_grey() + blank_theme +  theme(axis.text.x=element_blank())
   
   # table plot
-  
+  if (school_index <= 15) {
+    raw_data_table <- raw_data_table_part1
+  }else{
+    raw_data_table <- raw_data_table_part2
+  }
   selected_data_table <- raw_data_table %>% filter(schoolindex == school_index & year == year_value) %>%   select(level,leet,gpa,lang,doc,essay,interview,sum)
   selected_data_table[is.na(selected_data_table)] <- 0
   
   
   # pie 랑 table 결합 
   grid.arrange(pie,tableGrob(selected_data_table, rows = NULL),nrow=1)
+}
+
+# 남녀 비율
+insert_chart_sex <- function(school_index, year_value){
+  cprint("남녀 비율", subject_print_type)
+  hr()
+
+  selected_data_sex <- raw_data_sex %>% filter(schoolindex == school_index) %>% select(selected_colname_sex)
+  selected_data_sex <- gather(selected_data_sex)
+  selected_data_sex <- selected_data_sex %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
+  ggplot(selected_data_sex,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
+}
+
+# 자교 비율
+insert_chart_myschool <- function(school_index, year_value){
+  cprint("자교 비율", subject_print_type)
+  hr()
+  
+  selected_data_myschool <- raw_data_myschool %>% filter(schoolindex == school_index) %>% select(selected_colname_myschool)
+  selected_data_myschool <- gather(selected_data_myschool)
+  selected_data_myschool <- selected_data_myschool %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
+  ggplot(selected_data_myschool,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
 }
 
 insert_chart_foreign <- function(school_index, year_value){
@@ -134,21 +139,20 @@ for (i in 0:3) {
   
 # 본문 시작
   raw_data_pie <- read.csv('./rawdatas/abc2.csv')
-  raw_data_table <- read.csv('./rawdatas/abc.csv')
+  raw_data_table_part1 <- read.csv('./rawdatas/abc_part1.csv')
+  raw_data_table_part2 <- read.csv('./rawdatas/abc_part2.csv')
   raw_data_sex <- read.csv('./rawdatas/sex.csv')%>% rename(schoolindex = 癤퓋choolindex)
   raw_data_myschool <- read.csv('./rawdatas/myschool.csv')%>% rename(schoolindex = 癤퓋choolindex)
   raw_data_foreign <- read.csv('./rawdatas/foreign.csv')  %>% rename(schoolindex = 癤퓋choolindex)
   
-  for (school_index in 1:21) {
+  
+  for (school_index in 1:25) {
     insert_school_name(school_index, year_value)
   insert_chart_application(school_index, year_value)
   print(insert_chart_sex(school_index, year_value))
   print(insert_chart_myschool(school_index, year_value))
   print(insert_chart_foreign(school_index, year_value))
   }
-  
-  
-
   
   
 ```
