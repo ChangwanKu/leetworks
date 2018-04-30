@@ -48,6 +48,6 @@ tp1
 
 library(gridExtra)
 
-# pie 랑 table 합체 ㅁㅁㅁㅁㅁ
+# pie 랑 table 합체 
 
 grid.arrange(pie,tableGrob(tp1, rows = NULL),nrow=1)

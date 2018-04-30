@@ -19,4 +19,3 @@ a3
 ggplot(a3,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge')
 
 
-#수정 
