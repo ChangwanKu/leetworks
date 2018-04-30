@@ -1,6 +1,10 @@
 ------
+```{python}
+schoolname = ["강원대학교", "서울대학교"]
+print(schoolname[0])
+```
 
-# 강원대학교 aaaaaaaaaaaaaaaabbbbbbbbbbccccccc
+# 강원대학교
 output : 
 ```{r normaldis, echo=TRUE, prompt=TRUE, comment=NA, format="html"}
 library(knitr)
@@ -15,7 +19,7 @@ library(ggplot2)
 
 # 모집인원 pie chart
 
-a <- read.csv('./abc2.csv')
+a <- read.csv('./raw datas/abc2.csv')
 
 a1 <- a %>% filter(schoolindex == 10 & year == 2018)
 
@@ -42,7 +46,7 @@ pie <- pie + scale_fill_grey() + blank_theme +  theme(axis.text.x=element_blank(
 
 # table plot
 
-tp <- read.csv('./abc.csv')
+tp <- read.csv('./raw datas/abc.csv')
 tp1 <- tp %>% filter(schoolindex == 1 & year == 2018) %>% select(level,leet,gpa,lang,doc,essay,interview,sum)
 tp1[is.na(tp1)] <- 0
 
