@@ -4,22 +4,18 @@ library(ggplot2)
 library(readr)
 
 # csv open
-a <- read_csv('./rawdatas/major.csv')
-head(a)
-str(a)
+csv <- read_csv('./rawdatas/major.csv')
+head(csv)
 
 # chart 에 맞게 변형
 
-a1 <- a[1,]
+major <- csv %>% filter(schoolindex == 1) %>% 
+  select(law,human,nature) %>% gather()
 
-a2 <- gather(a1)
-a2
+major
 
-a3 <- a2 %>% filter(key == '법학' | key == '비법(문과)' | key == '비법(이과)')
+p <- ggplot(major,aes(x='',y=value,fill=key)) + geom_bar(width = 1, size =1, stat = 'identity')
 
-
-p <- ggplot(a3,aes(x='',y=value,fill=key)) + geom_bar(width = 1, stat = 'identity')
-
-pie <- p+coord_polar('y',start=0)
+pie <- p+coord_polar('y')
 
 pie
