@@ -12,22 +12,26 @@ str(csv)
 # clean data
 
 csv2 <- csv %>% filter(schoolindex==1) %>% group_by(school) %>%
-  mutate(sum = sum(y9, y10, y11, y12, y13, y14, y15, y16, y17)) %>% arrange(desc(sum)) %>% distinct(school,sum) %>%
-  head(5)
+  mutate(sum = sum(y9, y10, y11, y12, y13, y14, y15, y16, y17)) %>% arrange(desc(sum)) %>% distinct(school,sum)
+  
+ 
+top5 <- csv2 %>%  head(5)
 
+etc <- data.frame(school='기타',sum=sum(csv2$sum)-sum(top5$sum))
 
-csv3 <- csv %>% filter(schoolindex==1) %>% group_by(school) %>%
-  mutate(sum = sum(y9, y10, y11, y12, y13, y14, y15, y16, y17)) %>% arrange(desc(sum)) %>% distinct(school,sum) 
+fromschool <- bind_rows(top5,etc)
 
-csv3 <- data.frame(school='기타',sum=sum(csv3$sum)-sum(csv2$sum))
+fromschool$school <- factor(fromschool$school, levels = rev(as.character(fromschool$school)))
 
-fromschool <- bind_rows(csv2,csv3)
 
 # data 2 plot
 
-bp <- ggplot(fromschool,aes(x='',y=sum,fill=school)) + geom_bar(width = 1, stat = 'identity')
+bp <- ggplot(fromschool,aes(x='',y=sum,fill=school)) + geom_bar(width = 1, size = 1, color = 'white', stat = 'identity')
 bp  
 
-pie <- bp+coord_polar('y',start=0)
+pie <- bp+coord_polar('y')
 
-pie + theme_void()
+pie + theme_void() + guides(fill = guide_legend(reverse = TRUE))
+
+
+csv2 %>% tail(sum(tally(csv2)$n)-5)
