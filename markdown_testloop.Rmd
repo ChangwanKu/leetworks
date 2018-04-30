@@ -92,6 +92,27 @@ insert_school_name <- function(school_index, year_value){
 
 }
 
+insert_chart_age_rate <- function(school_index, year_value){
+  cprint("연령 비율", subject_print_type)
+  
+  selected_data_age_rate <- raw_data_age %>% filter(schoolindex == school_index) %>% select(ends_with('14'),ends_with('15'),ends_with('16'),ends_with('17')) %>% gather()
+  selected_data_age_rate <- selected_data_age_rate %>% mutate(group = substr(key,1,1),year = substr(key,2,3))
+
+selected_data_age_rate <- selected_data_age_rate %>% ggplot(aes(year,value,fill=group)) + geom_bar(stat = 'identity')
+selected_data_age_rate + theme_classic()
+
+}
+
+insert_chart_major <- function(school_index, year_value){
+  
+selected_data_major <- gather(raw_data_major[1,])
+selected_data_major <- selected_data_major %>% filter(key == 'law' | key == 'human' | key == 'nature')
+selected_data_major <- ggplot(selected_data_major,aes(x='',y=value,fill=key)) + geom_bar(width = 1, stat = 'identity')
+selected_data_major <- selected_data_major+coord_polar('y',start=0)
+selected_data_major
+
+}
+
 ```
 
 ```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
@@ -128,14 +149,18 @@ for (i in 0:3) {
   raw_data_sex <- read.csv('./rawdatas/sex.csv')%>% rename(schoolindex = 癤퓋choolindex)
   raw_data_myschool <- read.csv('./rawdatas/myschool.csv')%>% rename(schoolindex = 癤퓋choolindex)
   raw_data_foreign <- read.csv('./rawdatas/foreign.csv')  %>% rename(schoolindex = 癤퓋choolindex)
+  raw_data_age <- read.csv('./rawdatas/age.csv')
+  raw_data_major <- read.csv('./rawdatas/major.csv')
   
   
-  for (school_index in 1:25) {
+  for (school_index in 1:5) {
     insert_school_name(school_index, year_value)
     insert_chart_application(school_index, year_value)
     print(insert_chart_sex(school_index, year_value))
     print(insert_chart_myschool(school_index, year_value))
     print(insert_chart_foreign(school_index, year_value))
+    print(insert_chart_age_rate(school_index, year_value))
+    print(insert_chart_major(school_index, year_value))
   }
   
   

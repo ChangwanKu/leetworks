@@ -4,7 +4,7 @@ library(ggplot2)
 library(readr)
 
 # csv open
-a <- read_csv('e:/data/law/major.csv')
+a <- read_csv('./rawdatas/major.csv')
 head(a)
 str(a)
 
