@@ -104,20 +104,48 @@ selected_data_age_rate + theme_classic()
 }
 
 insert_chart_major <- function(school_index, year_value){
+  selected_data_major <- raw_data_major %>% filter(schoolindex == 1) %>% select(law,human,nature) %>% gather()
+  selected_data_major <- ggplot(selected_data_major,aes(x='',y=value,fill=key)) + geom_bar(width = 1, stat = 'identity')
+  selected_data_major <- selected_data_major+coord_polar('y',start=0)
+  selected_data_major
+}
+
+insert_chart_fromschool <- function(school_index, year_value){
+
+  # 하드코딩 되어있는 부분
+  selected_data_fromschool <- raw_data_fromschool %>% filter(schoolindex==school_index) %>% group_by(school) %>%
+  mutate(sum = sum(y9, y10,y11,y12,y13,y14,y15,y16,y17)) %>% arrange(desc(sum)) %>% distinct(school,sum)
   
-selected_data_major <- gather(raw_data_major[1,])
-selected_data_major <- selected_data_major %>% filter(key == 'law' | key == 'human' | key == 'nature')
-selected_data_major <- ggplot(selected_data_major,aes(x='',y=value,fill=key)) + geom_bar(width = 1, stat = 'identity')
-selected_data_major <- selected_data_major+coord_polar('y',start=0)
-selected_data_major
+  top5 <- selected_data_fromschool %>%  head(5)
+
+  etc <- data.frame(school='기타',sum=sum(selected_data_fromschool$sum)-sum(top5$sum))
+  fromschool <- bind_rows(top5,etc)
+  fromschool$school <- factor(fromschool$school, levels = rev(as.character(fromschool$school)))
+
+  # data 2 plot
+  
+  bp <- ggplot(fromschool,aes(x='',y=sum,fill=school)) + geom_bar(width = 1, size = 1, color = 'white', stat = 'identity')
+  pie <- bp+coord_polar('y')
+  pie + theme_void() + guides(fill = guide_legend(reverse = TRUE))
+  
+  etc_label <- selected_data_fromschool %>% tail(sum(tally(selected_data_fromschool)$n)-5)
+  etc_label <- sprintf("%s(%s)", etc_label$school, etc_label$sum)
+  temp <- NULL
+  for (i in etc_label) {
+    if (is.null(temp)) {
+      temp <- i
+    }else{
+    temp <- paste(temp, ", ",i)}
+  }
+  etc_label <- temp
+  cprint(etc_label,'h5')
 
 }
 
 ```
 
 ```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
-
-
+library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -141,6 +169,8 @@ for (i in 0:3) {
   selected_colname_myschool <- c(selected_colname_myschool, paste(colname_prefix_myschool,year_prefix+i, sep=""))
   selected_colname_foreign   <- c(selected_colname_foreign, paste(colname_prefix_foreign,year_prefix+i, sep=""))
 }
+# selected_colname_fromschool 이부분은 하드 코딩 되어있음.
+
   
 # 본문 시작
   raw_data_pie <- read.csv('./rawdatas/application.csv')
@@ -150,10 +180,11 @@ for (i in 0:3) {
   raw_data_myschool <- read.csv('./rawdatas/myschool.csv')%>% rename(schoolindex = 癤퓋choolindex)
   raw_data_foreign <- read.csv('./rawdatas/foreign.csv')  %>% rename(schoolindex = 癤퓋choolindex)
   raw_data_age <- read.csv('./rawdatas/age.csv')
-  raw_data_major <- read.csv('./rawdatas/major.csv')
+  raw_data_major <- read.csv('./rawdatas/major.csv') %>% rename(schoolindex = 癤퓋choolindex)
+  raw_data_fromschool <- read_csv('./rawdatas/fromschool.csv')
+
   
-  
-  for (school_index in 1:5) {
+  for (school_index in 1:2) {
     insert_school_name(school_index, year_value)
     insert_chart_application(school_index, year_value)
     print(insert_chart_sex(school_index, year_value))
@@ -161,6 +192,7 @@ for (i in 0:3) {
     print(insert_chart_foreign(school_index, year_value))
     print(insert_chart_age_rate(school_index, year_value))
     print(insert_chart_major(school_index, year_value))
+    #print(insert_chart_fromschool(school_index, year_value))
   }
   
   
