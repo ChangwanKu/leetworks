@@ -36,9 +36,12 @@ text_y <- data.frame(pos = rev(cumsum(fromschool$tot)-fromschool$tot/2))
 p <- ggplot(from,aes(x='',y=tot,fill=school)) + geom_bar(width = 1, size =1, color = 'white', stat = 'identity')
 p <- p+coord_polar('y', start = 0)
 p <- p + theme_minimal() + theme(axis.title = element_blank(), axis.text = element_blank(), panel.grid = element_blank(), legend.position = 'none')
-p <- p + scale_fill_grey(start = 0.8, end = 0.1)
+# p <- p + scale_fill_grey(start = 0.8, end = 0.1)
+p <- p + scale_fill_brewer()
 p + geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7 )
 
+
+# scale_fill_manual(values = c('#ffccff', '#ffcccc', '#ff99cc','#ff00ff','#ff00cc','#660033'))
 ##################################################################################################여기까지
 # etc_label <- selected_data_fromschool %>% tail(sum(tally(selected_data_fromschool)$n)-5)
 # etc_label <- sprintf("%s(%s)", etc_label$school, etc_label$sum)
