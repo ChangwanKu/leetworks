@@ -14,8 +14,5 @@ major <- csv %>% filter(schoolindex == 1) %>%
 
 major
 
-p <- ggplot(major,aes(x='',y=value,fill=key)) + geom_bar(width = 1, size =1, stat = 'identity')
-
-pie <- p+coord_polar('y')
-
-pie
+p <- ggplot(major,aes(x=key,y=value,fill=key)) + geom_line()
+p

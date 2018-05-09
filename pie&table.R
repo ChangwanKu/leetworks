@@ -1,53 +1,36 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(ggpubr)
 
 # 모집인원 pie chart
 
-a <- read.csv('e:/data/law/abc2.csv')
-head(a)
-str(a)
+entrance <- read.csv('./rawdatas/application.csv')
 
-a1 <- a %>% filter(schoolindex == 1 & year == 2018)
-a1
+ent1 <- entrance %>% filter(schoolindex == 1 & year == 2018) %>% select(3:7) %>% rename()%>% gather()
 
-a2 <- gather(a1,,,-1)
-a2
+ent2 <- ent1 %>% filter(value != 0) %>% arrange(desc(value)) %>% mutate(text_y = cumsum(value) - value/2)
 
-a3 <- a2 %>% filter(key == 'a' | key == 'b')
-a3
+ent2$key <- factor(ent2$key,levels = rev(as.character(ent2$key)))
 
+p <- ggplot(ent2,aes(x='',y=value,fill=key)) + geom_bar(width = 1,stat = 'identity', color = 'white')
+p <- p + coord_polar(theta = 'y', start = 0 )
 
-bp <- ggplot(a3,aes(x='',y=value,fill=key)) + geom_bar(width = 1, stat = 'identity')
-bp  
+p <- p + theme_minimal() + theme(axis.title = element_blank(), axis.text = element_blank(), panel.grid = element_blank(), legend.position = 'bottom', legend.title = element_blank()) + guides(fill = guide_legend(reverse = TRUE))
 
-pie <- bp+coord_polar('y',start=0)
+# p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
 
-
-blank_theme <- theme_minimal()+
-  theme(
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank(),
-    panel.border = element_blank(),
-    panel.grid=element_blank(),
-    axis.ticks = element_blank(),
-    plot.title=element_text(size=14, face="bold")
-  )
-
-
-pie <- pie + scale_fill_grey() + blank_theme +  theme(axis.text.x=element_blank())
+p <- p + geom_text(aes(label = value, y = text_y), nudge_x = .7) + scale_fill_grey(start = 0.8, end = 0.2)
 
 # table plot
+p
 
-tp <- read.csv('e:/data/law/abc.csv')
-head(tp)
-str(tp)
-tp1 <- tp %>% filter(schoolindex == 1 & year == 2018) %>% select(level,leet,gpa,lang,doc,essay,interview,sum)
-tp1[is.na(tp1)] <- 0
-tp1
+standard <- read.csv('./rawdatas/entrance_standard.csv')
 
-library(gridExtra)
+stan1 <- standard %>% filter(schoolindex == 1 & year == 2018) %>% select(level,leet,gpa,lang,doc,essay,interview,sum) %>% replace(.,is.na(.),0)
+
 
 # pie 랑 table 합체 
 
-grid.arrange(pie,tableGrob(tp1, rows = NULL),nrow=1)
+g <- ggtexttable(stan1, rows = NULL, theme = ttheme(tbody.style = tbody_style(fill = 'white'), padding = unit(c(20, 30), "mm")))
+ggarrange(p,g,ncol = 2, nrow = 1)
