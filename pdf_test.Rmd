@@ -1,0 +1,156 @@
+---
+header-includes:
+- \usepackage{kotex}
+
+output:
+  pdf_document: 
+    latex_engine: pdflatex
+mainfont: NanumGothic
+---
+
+```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
+#하나로 파일을 합친다.
+
+#PACKAGES
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+library(ggpubr)
+
+############################################
+#                 FROM SCHOOL
+############################################
+fromschool_data <- read_csv('./rawdatas/fromschool.csv')
+
+school_index <-1
+
+selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 3) %>% group_by(school) %>%
+  mutate(tot = sum(y9, y10, y11, y12, y13, y14, y15, y16, y17)) %>% arrange(desc(tot)) %>% distinct(school,tot)
+
+top5 <- selected_data_fromschool %>%  head(5)
+
+etc <- data.frame(school='기타',tot=sum(selected_data_fromschool$tot)-sum(top5$tot))
+
+fromschool <- bind_rows(top5,etc)
+
+fromschool$school <- factor(fromschool$school, levels = rev(as.character(fromschool$school)))
+
+from <- fromschool %>% arrange(school)
+
+text_y <- data.frame(pos = rev(cumsum(fromschool$tot)-fromschool$tot/2))
+
+# data 2 plot
+
+p <- ggplot(from,aes(x='',y=tot,fill=school)) + geom_bar(width = 1, size =1, color = 'white', stat = 'identity')
+p <- p+coord_polar('y', start = 0)
+p <- p + theme_minimal() + theme(axis.title = element_blank(), axis.text = element_blank(), panel.grid = element_blank(), legend.position = 'none')
+# p <- p + scale_fill_grey(start = 0.8, end = 0.1)
+p <- p + scale_fill_brewer()
+p + geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7 )
+
+etc_label <- selected_data_fromschool %>% tail(-5)
+
+a = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
+print(a)
+
+
+
+##############################################
+#                    age rate plot
+###########################################
+
+
+
+age <- read.csv('./rawdatas/age.csv')
+age1 <- age %>% filter(schoolindex == 1) %>% select(ends_with('14'),ends_with('15'),ends_with('16'),ends_with('17')) %>% gather()
+age2 <- age1 %>% mutate(group = substr(key,1,1),year = substr(key,2,3))
+
+p <- age2 %>% ggplot(aes(x=year,y=value,fill=group)) + geom_bar(stat = 'identity', width = 0.5)
+p <- p + scale_x_discrete(labels=seq(2014,2017,1))
+p <- p + theme_minimal() + theme(legend.position="bottom", legend.direction="horizontal", legend.title = element_blank(), axis.title.x = element_blank(), axis.title.y = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), panel.grid.minor.y = element_line(color='gray'), axis.ticks = element_blank())
+p <- p + scale_fill_manual(values = c('#FF00FF','#FF99ff','#ffccff'), labels = c('29세 이상','26~28세','25세 이하')) + labs(caption = '단위 : %')
+p
+
+#############################################
+#               FOREIGN BAR PLOT
+#############################################
+
+
+csv <- read.csv('./rawdatas/foreign.csv')
+
+foreign <- csv %>% rename(schoolindex = 癤퓋choolindex) %>% filter(schoolindex == 1) %>% select(f14, f15, f16, f17)
+
+foreign <- gather(foreign)
+
+foreign
+
+p <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity',width = 0.5, fill='#FF00FF')
+p <- p + geom_text(aes(key,value,label = paste0(value)),vjust=-0.5) + scale_x_discrete(labels=seq(2014,2017,1))
+p + theme_minimal() + theme(axis.ticks = element_blank(),axis.title = element_blank(), axis.text.y = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), panel.grid.minor.y = element_line(color='gray'))
+
+
+##############################################
+# myschool bar plot
+#############################################
+
+a <- read.csv('./rawdatas/myschool.csv')
+head(a)
+
+a1 <- a %>% filter(癤퓋choolindex == 1) %>% select(m14, o14, m15, o15, m16, o16, m17, o17)
+a1
+
+
+
+a2 <- gather(a1)
+a2
+
+a3 <- a2 %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
+a3
+p <- ggplot(a3,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge', width = 0.5)
+p <- p + geom_text(aes(x=year, y=value, label = paste0(value)),vjust=-0.5, position = position_dodge(0.5)) + scale_x_discrete(labels=seq(2014,2017,1))
+p <- p + theme_minimal() + theme(axis.ticks = element_blank(),axis.title = element_blank(), axis.text.y = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), panel.grid.minor.y = element_line(color='gray'))
+p + theme(legend.position="bottom", legend.direction="horizontal", legend.title = element_blank()) + scale_fill_manual(values = c('#FF00FF','#FFCCFF'), labels = c('자','타'))
+
+
+#####################################################
+#                   모집인원 파이 차트
+#####################################################
+
+# 모집인원 pie chart
+
+entrance <- read.csv('./rawdatas/application.csv')
+
+ent1 <- entrance %>% filter(schoolindex == 1 & year == 2018) %>% select(3:7) %>% rename()%>% gather()
+
+ent2 <- ent1 %>% filter(value != 0) %>% arrange(desc(value)) %>% mutate(text_y = cumsum(value) - value/2)
+
+ent2$key <- factor(ent2$key,levels = rev(as.character(ent2$key)))
+
+p <- ggplot(ent2,aes(x='',y=value,fill=key)) + geom_bar(width = 1,stat = 'identity', color = 'white')
+p <- p + coord_polar(theta = 'y', start = 0 )
+
+p <- p + theme_minimal() + theme(axis.title = element_blank(), axis.text = element_blank(), panel.grid = element_blank(), legend.position = 'bottom', legend.title = element_blank()) + guides(fill = guide_legend(reverse = TRUE))
+
+# p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
+
+p <- p + geom_text(aes(label = value, y = text_y), nudge_x = .7) + scale_fill_grey(start = 0.8, end = 0.2)
+
+# table plot
+p
+
+standard <- read.csv('./rawdatas/entrance_standard.csv')
+
+stan1 <- standard %>% filter(schoolindex == 1 & year == 2018) %>% select(level,leet,gpa,lang,doc,essay,interview,sum) %>% replace(.,is.na(.),0)
+
+
+# pie 랑 table 합체 
+
+g <- ggtexttable(stan1, rows = NULL, theme = ttheme(tbody.style = tbody_style(fill = 'white'), padding = unit(c(20, 30), "mm")))
+ggarrange(p,g,ncol = 2, nrow = 1)
+
+
+
+
+```
+
