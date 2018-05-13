@@ -4,23 +4,38 @@ header-includes:
 
 output:
   pdf_document: 
-    latex_engine: pdflatex
-mainfont: NanumGothic
+    latex_engine: xelatex
+lang: korean
+mainfont: KoPubBatangLight
 ---
 
-```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
-#하나로 파일을 합친다.
-
+```{r, echo=FALSE, message = FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE, dev ="cairo_pdf")
 #PACKAGES
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(readr)
 library(ggpubr)
+library(extrafont)
+library(gridExtra)
+library(grid)
+library(downloader)
+library(grDevices)
+loadfonts()
+```
+
+
+```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
+#하나로 파일을 합친다.
+
+
+
 
 ############################################
 #                 FROM SCHOOL
 ############################################
+```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
 fromschool_data <- read_csv('./rawdatas/fromschool.csv')
 
 school_index <-1
@@ -42,18 +57,21 @@ text_y <- data.frame(pos = rev(cumsum(fromschool$tot)-fromschool$tot/2))
 
 # data 2 plot
 
-p <- ggplot(from,aes(x='',y=tot,fill=school)) + geom_bar(width = 1, size =1, color = 'white', stat = 'identity')
-p <- p+coord_polar('y', start = 0)
-p <- p + theme_minimal() + theme(axis.title = element_blank(), axis.text = element_blank(), panel.grid = element_blank(), legend.position = 'none')
-# p <- p + scale_fill_grey(start = 0.8, end = 0.1)
-p <- p + scale_fill_brewer()
-p + geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7 )
+ggplot(from,aes(x='',y=tot,fill=school)) + 
+  geom_bar(width = 1, size =1, color = 'white', stat = 'identity') +
+  coord_polar('y', start = 0) +
+  theme_minimal() + 
+  theme(axis.title = element_blank(), axis.text = element_blank(), 
+        panel.grid = element_blank(), legend.position = 'none') + 
+  scale_fill_brewer() +
+  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang light",size=3) ->
+  fromschool_plot
+fromschool_plot
+#grid.arrange(p, p2, ncol = 2)
 
 etc_label <- selected_data_fromschool %>% tail(-5)
-
 a = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
-print(a)
-
+a
 
 
 ##############################################
@@ -85,7 +103,7 @@ foreign <- gather(foreign)
 
 foreign
 
-p <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity',width = 0.5, fill='#FF00FF')
+p <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity',width = 0.5, fill='#FF00FF',family="")
 p <- p + geom_text(aes(key,value,label = paste0(value)),vjust=-0.5) + scale_x_discrete(labels=seq(2014,2017,1))
 p + theme_minimal() + theme(axis.ticks = element_blank(),axis.title = element_blank(), axis.text.y = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), panel.grid.minor.y = element_line(color='gray'))
 
