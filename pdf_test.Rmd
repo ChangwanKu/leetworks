@@ -1,17 +1,14 @@
 ---
-<<<<<<< HEAD
-geometry: margin=0.25in
-=======
-geometry: margin=1in
->>>>>>> f33f6c33983045aab2d1565509cf1f89cb3d8ddb
-header-includes: \usepackage{kotex}
-lang: korean
-mainfont: KoPubBatangLight
-output:
-  html_document:
-    df_print: paged
+header-includes:
+- \usepackage{kotex}
+
+output: 
   pdf_document:
     latex_engine: xelatex
+lang: korean
+mainfont: KoPubBatangLight
+geometry: margin=0.25in
+
 ---
 ```{r, include=FALSE, message = FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE, dev ="cairo_pdf")
@@ -83,11 +80,7 @@ mojip_plot <- ggplot(entrance,aes(x='',y=value,fill=key)) + geom_bar(width = 1,s
   geom_text(aes(label = value, y = text_y), nudge_x = .7, family="KoPubBatang Light") + 
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))
 
-<<<<<<< HEAD
 # p + scale_fill_manual(values = c('#FFCCFF','#FF3399','#FF00FF','#FF00CC'))
-=======
- p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
->>>>>>> f33f6c33983045aab2d1565509cf1f89cb3d8ddb
 
 
 #기본계획 표 : standard
