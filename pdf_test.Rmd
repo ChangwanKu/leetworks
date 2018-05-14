@@ -1,14 +1,13 @@
 ---
-header-includes:
-- \usepackage{kotex}
-
-output: 
-  pdf_document:
-    latex_engine: xelatex
+geometry: margin=1in
+header-includes: \usepackage{kotex}
 lang: korean
 mainfont: KoPubBatangLight
-geometry: margin=1in
-
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
 ---
 ```{r, include=FALSE, message = FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE, dev ="cairo_pdf")
@@ -57,7 +56,7 @@ mojip_plot <- ggplot(entrance,aes(x='',y=value,fill=key)) + geom_bar(width = 1,s
   geom_text(aes(label = value, y = text_y), nudge_x = .7, family="KoPubBatang Light") + 
   scale_fill_grey(start = 0.8, end = 0.2)
 
-# p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
+ p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
 
 
 #기본계획 표 : standard
