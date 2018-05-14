@@ -6,7 +6,7 @@ library(readr)
 
 fromschool_data <- read_csv('./rawdatas/fromschool.csv')
 
-selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 1) %>% group_by(school) %>% mutate(tot = sum(y16)) %>% arrange(desc(tot)) %>% distinct(school,tot)
+selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 1) %>% group_by(school) %>% mutate(tot = sum(y16)) %>% arrange(desc(tot)) %>% distinct(school,tot) %>% filter(tot != 0)
 
 top5 <- selected_data_fromschool %>%  head(5)
 
