@@ -5,7 +5,7 @@ library(ggpubr)
 
 # 모집인원 pie chart
 
-entrance <- read.csv('./rawdatas/application.csv')
+entrance <- read.csv('./rawdatas/모집인원(16,17,18,19).csv')
 
 ent1 <- entrance %>% filter(schoolindex == 1 & year == 2018) %>% select(3:7) %>% rename()%>% gather()
 
@@ -20,7 +20,7 @@ p <- p + theme_minimal() + theme(axis.title = element_blank(), axis.text = eleme
 
 # p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
 
-p <- p + geom_text(aes(label = value, y = text_y), nudge_x = .7) + scale_fill_grey(start = 0.8, end = 0.2)
+p <- p + geom_text(aes(label = value, y = text_y), nudge_x = .7) + scale_fill_manual(values = c("#FF7FFF", "#FF4CFF", "#FF33FF", "#FF00FF"))
 
 # table plot
 p
@@ -31,6 +31,29 @@ stan1 <- standard %>% filter(schoolindex == 1 & year == 2018) %>% select(level,l
 
 
 # pie 랑 table 합체 
+g<-tableGrob(stan1, rows = NULL, theme = ttheme_minimal(padding = unit(c(20,40), 'mm')))
 
-g <- ggtexttable(stan1, rows = NULL, theme = ttheme(tbody.style = tbody_style(fill = 'white'), padding = unit(c(20, 30), "mm")))
-ggarrange(p,g,ncol = 2, nrow = 1)
+g<-gtable_add_grob(g, grobs = segmentsGrob(x0 = unit(0,"npc"),
+                                           y0 = unit(0,"npc"),
+                                           x1 = unit(1,"npc"),
+                                           y1 = unit(0,"npc"),
+                                           gp = gpar(lwd = 2.0, col = "#FF7FFF")),
+                   t = 1, b = 1, l = 1, r = ncol(g))
+
+g<-gtable_add_grob(g, grobs = segmentsGrob(x0 = unit(0,"npc"),
+                                           y0 = unit(0,"npc"),
+                                           x1 = unit(1,"npc"),
+                                           y1 = unit(0,"npc"),
+                                           gp = gpar(lwd = 2.0, col = "#FF7FFF")),
+                   t = 1, b = 2, l = 1, r = ncol(g))
+
+
+g<-gtable_add_grob(g, grobs = segmentsGrob(x0 = unit(0,"npc"),
+                                           y0 = unit(0,"npc"),
+                                           x1 = unit(1,"npc"),
+                                           y1 = unit(0,"npc"),
+                                           gp = gpar(lwd = 2.0, col = "#FF7FFF")),
+                   t = 2, b = 3, l = 1, r = ncol(g))
+
+
+ggarrange(p,g, ncol = 2)
