@@ -1,0 +1,119 @@
+---
+header-includes:
+- \usepackage{kotex}
+
+output: 
+  pdf_document:
+    latex_engine: xelatex
+lang: korean
+mainfont: KoPubBatangLight
+---
+
+
+```{r, echo=FALSE, message = FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE, dev ="cairo_pdf")
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+library(ggpubr)
+library(extrafont)
+library(gridExtra)
+library(grid)
+library(downloader)
+library(grDevices)
+
+loadfonts()
+
+```
+
+
+이 남자 코딩할땐 어떨까?
+
+```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
+fromschool_data <- read_csv('./rawdatas/fromschool.csv')
+
+school_index <-1
+
+selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 3) %>% group_by(school) %>%
+  mutate(tot = sum(y9, y10, y11, y12, y13, y14, y15, y16, y17)) %>% arrange(desc(tot)) %>% distinct(school,tot)
+
+top5 <- selected_data_fromschool %>%  head(5)
+
+etc <- data.frame(school='기타',tot=sum(selected_data_fromschool$tot)-sum(top5$tot))
+
+fromschool <- bind_rows(top5,etc)
+
+fromschool$school <- factor(fromschool$school, levels = rev(as.character(fromschool$school)))
+
+from <- fromschool %>% arrange(school)
+
+text_y <- data.frame(pos = rev(cumsum(fromschool$tot)-fromschool$tot/2))
+
+# data 2 plot
+
+ggplot(from,aes(x='',y=tot,fill=school)) + 
+  geom_bar(width = 1, size =1, color = 'white', stat = 'identity') +
+  coord_polar('y', start = 0) +
+  theme_minimal() + 
+  theme(axis.title = element_blank(), axis.text = element_blank(), 
+        panel.grid = element_blank(), legend.position = 'none') + 
+  scale_fill_brewer() +
+  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang light",size=2) ->
+  fromschool_plot
+#fromschool_plot
+##############################################
+#                    age rate plot
+###########################################
+
+
+
+
+age <- read.csv('./rawdatas/age.csv')%>% 
+  filter(schoolindex == 1) %>% 
+  select(ends_with('14'),ends_with('15'),ends_with('16'),ends_with('17')) %>% 
+  gather() %>% 
+  mutate(group = substr(key,1,1),year = substr(key,2,3)) %>%
+  ggplot(aes(x=year,y=value,fill=group)) + 
+  geom_bar(stat = 'identity', width = 0.5) +
+  scale_x_discrete(labels=seq(2014,2017,1))+ 
+  theme_minimal() + 
+  theme(legend.position="bottom", legend.direction="horizontal", 
+        legend.title = element_blank(), axis.title.x = element_blank(), 
+        axis.title.y = element_blank(), panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_line(color = 'gray'), 
+        panel.grid.minor.y = element_line(color='gray'), 
+        axis.ticks = element_blank(),
+        text=element_text(family="KoPubBatang Light")) + 
+  scale_fill_manual(values = c('#FF00FF','#FF99ff','#ffccff'), 
+                    labels = c('29세 이상','26~28세','25세 이하')) +
+  labs(caption = '단위 : %')
+grid.arrange(fromschool_plot, age, ncol = 2)
+
+
+
+
+
+
+etc_label <- selected_data_fromschool %>% tail(-5)
+a = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
+a
+
+
+
+
+
+```
+
+
+
+```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
+
+
+
+```
+
+
