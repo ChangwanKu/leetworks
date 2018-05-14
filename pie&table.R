@@ -2,6 +2,9 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(ggpubr)
+library(grid)
+library(gridExtra)
+library(gtable)
 
 # 모집인원 pie chart
 
