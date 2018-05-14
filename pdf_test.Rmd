@@ -1,14 +1,13 @@
 ---
-header-includes:
-- \usepackage{kotex}
-
-output: 
-  pdf_document:
-    latex_engine: xelatex
+geometry: margin=0.25in
+header-includes: \usepackage{kotex}
 lang: korean
 mainfont: KoPubBatangLight
-geometry: margin=1in
-
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    latex_engine: xelatex
 ---
 ```{r, include=FALSE, message = FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE, dev ="cairo_pdf")
@@ -34,15 +33,38 @@ loadfonts()
 ```{r comment=NA, error = FALSE, warning=FALSE, message=FALSE, results = "asis", echo=FALSE}
 
 
+
+subchunkify <- function(g, fig_height=7, fig_width=5) {
+  g_deparsed <- paste0(deparse(
+    function() {g}
+  ), collapse = '')
+  
+  sub_chunk <- paste0("
+  `","``{r sub_chunk_", floor(runif(1) * 10000), ", fig.height=", fig_height, ", fig.width=", fig_width, ", echo=FALSE}",
+                      "\n(", 
+                      g_deparsed
+                      , ")()",
+                      "\n`","``
+  ")
+  
+  cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
+}
+
+school_name <- c("강원대", "건국대", "경북대", "경희대", "고려대", "동아대", "부산대", "서강대", "서울대", "서울시립대", "성균관대", "아주대", "연세대", "영남대", "원광대", "이화여대", "인하대", "전남대", "전북대", "제주대", "중앙대", "충남대", "충북대", "한국외대", "한양대")
+
+
+for (the_number in 1:1) {
+
 #####################################################
 #               1.    모집인원 파이 차트 +기본계획 표
 #####################################################
+cat("  \n#",school_name[the_number], "\n")
 cat("\n\n")
 cat("\n# 모집인원 + 기본계획 \n")
 cat("\n\n")
 
 entrance <- read.csv('./rawdatas/모집인원(16,17,18,19).csv') %>% 
-  filter(schoolindex == 1 & year == 2018) %>% select(3:7) %>% rename()%>% gather() %>%
+  filter(schoolindex == the_number & year == 2018) %>% select(3:7) %>% rename()%>% gather() %>%
   filter(value != 0) %>% arrange(desc(value)) %>% mutate(text_y = cumsum(value) - value/2)
 
 entrance$key <- factor(entrance$key,levels = rev(as.character(entrance$key)))
@@ -55,25 +77,23 @@ mojip_plot <- ggplot(entrance,aes(x='',y=value,fill=key)) + geom_bar(width = 1,s
         legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light")) + 
   guides(fill = guide_legend(reverse = TRUE))+ 
   geom_text(aes(label = value, y = text_y), nudge_x = .7, family="KoPubBatang Light") + 
-  scale_fill_grey(start = 0.8, end = 0.2)
+  scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))
 
-# p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
+# p + scale_fill_manual(values = c('#FFCCFF','#FF3399','#FF00FF','#FF00CC'))
 
 
 #기본계획 표 : standard
 
 standard <- read.csv('./rawdatas/entrance_standard.csv') %>% 
-  filter(schoolindex == 1 & year == 2018) %>% 
+  filter(schoolindex == the_number & year == 2018) %>% 
   select(level,leet,gpa,lang,doc,essay,interview,sum) %>% 
   replace(.,is.na(.),0)
 standard_table <- ggtexttable(standard, rows = NULL, theme = ttheme(base_size=5 ,tbody.style = tbody_style(fill = 'white'), ))
 
 # pie 랑 table 합체 
 
-#ggarrange(mojip,standard_table,ncol = 2, nrow = 1)
-grid.arrange(mojip_plot, standard_table, ncol = 2)
-
-
+#ggarrange(mojip,standa rd_table,ncol = 2, nrow = 1)
+subchunkify(grid.arrange(mojip_plot, standard_table, ncol = 2), 2.3, 7)
 
 ############################################
 #           2.sexplot 남녀비율 막대그래프
@@ -84,7 +104,7 @@ cat("\n\n")
 
 sexdata <- read.csv('./rawdatas/sex.csv') %>% 
   rename(schoolindex = 癤퓋choolindex) %>% 
-  filter(schoolindex == 1) %>% 
+  filter(schoolindex == the_number) %>% 
   select(m14, w14, m15, w15, m16, w16, m17, w17)
 
 sexdata1 <- gather(sexdata) %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
@@ -101,8 +121,8 @@ sexplot <- ggplot(sexdata1,aes(x=year, y=value, fill = group)) + geom_bar(stat='
         panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), 
         panel.grid.minor.y = element_line(color='gray'), axis.ticks = element_blank(), 
         axis.text.y = element_blank(),legend.text = element_text(family="KoPubBatang Light"))
-sexplot
 
+subchunkify(sexplot, 2.3, 7)
 
 
 ###########################################
@@ -113,7 +133,7 @@ cat("\n# 3. 자교비율 \n")
 cat("\n\n")
 
 myschool <- read.csv('./rawdatas/myschool.csv') %>%
-  filter(癤퓋choolindex == 1) %>% select(m14, o14, m15, o15, m16, o16, m17, o17)
+  filter(癤퓋choolindex == the_number) %>% select(m14, o14, m15, o15, m16, o16, m17, o17)
 
 myschool1 <- gather(myschool) %>% 
   mutate(group=substr(key,1,1),year=substr(key,2,3))
@@ -131,7 +151,8 @@ myschoolbarplot <- ggplot(myschool1,aes(x=year, y=value, fill = group)) +
         legend.position="bottom", legend.direction="horizontal", 
         legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light")) + 
   scale_fill_manual(values = c('#FF00FF','#FFCCFF'), labels = c('자','타'))
-myschoolbarplot
+
+subchunkify(myschoolbarplot, 2.3, 7)
 
 
 #############################################
@@ -144,7 +165,7 @@ cat("\n\n")
 
 foreign <- read.csv('./rawdatas/foreign.csv')  %>% 
   rename(schoolindex = 癤퓋choolindex) %>% 
-  filter(schoolindex == 1) %>% 
+  filter(schoolindex == the_number) %>% 
   select(f14, f15, f16, f17) %>% gather()
 
 #foreign
@@ -157,7 +178,7 @@ foreign_plot <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity',width 
         axis.text.y = element_blank(), panel.grid.major.x = element_blank(), 
         panel.grid.major.y = element_line(color = 'gray'), 
         panel.grid.minor.y = element_line(color='gray'))
-foreign_plot
+subchunkify(foreign_plot, 2.3, 7)
 
 
 
@@ -171,7 +192,7 @@ cat("\n\n")
 
 
 age <- read.csv('./rawdatas/age.csv')%>% 
-  filter(schoolindex == 1) %>% 
+  filter(schoolindex == the_number) %>% 
   select(ends_with('14'),ends_with('15'),ends_with('16'),ends_with('17')) %>% 
   gather() %>% 
   mutate(group = substr(key,1,1),year = substr(key,2,3)) %>%
@@ -189,7 +210,7 @@ age <- read.csv('./rawdatas/age.csv')%>%
   scale_fill_manual(values = c('#FF00FF','#FF99ff','#ffccff'), 
                     labels = c('29세 이상','26~28세','25세 이하')) +
   labs(caption = '단위 : %')
-age
+subchunkify(age, 2.3, 7)
 
 
 
@@ -201,9 +222,9 @@ cat("\n# 총 출신학교 현황  \n")
 cat("\n\n")
 fromschool_data <- read_csv('./rawdatas/fromschool.csv')
 
-school_index <-1
 
-selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 3) %>% group_by(school) %>%
+
+selected_data_fromschool <- fromschool_data %>% filter(schoolindex == the_number) %>% group_by(school) %>%
   mutate(tot = sum(y9, y10, y11, y12, y13, y14, y15, y16, y17)) %>% arrange(desc(tot)) %>% distinct(school,tot)
 
 top5 <- selected_data_fromschool %>%  head(5)
@@ -231,7 +252,7 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot
 #fromschool 출력
-fromschool_plot
+subchunkify(fromschool_plot, 3, 3)
 cat("\n\n")
 cat("\n## 기타  \n")
 cat("\n\n")
@@ -252,9 +273,9 @@ cat("\n\n")
 
 fromschool_data <- read_csv('./rawdatas/fromschool.csv')
 
-school_index <-1
 
-selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 1) %>% 
+
+selected_data_fromschool <- fromschool_data %>% filter(schoolindex == the_number) %>% 
   group_by(school) %>% mutate(tot = sum(y15)) %>% arrange(desc(tot)) %>% 
   distinct(school,tot) %>% filter(tot != 0)
 
@@ -284,7 +305,7 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot_2015
 #fromschool 출력
-fromschool_plot_2015
+subchunkify(fromschool_plot_2015, 3, 3)
 
 cat("\n\n")
 cat("\n## 기타  \n")
@@ -299,9 +320,9 @@ print(etc_label)
 ############################################
 
 
-school_index <-1
 
-selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 1) %>% 
+
+selected_data_fromschool <- fromschool_data %>% filter(schoolindex == the_number) %>% 
   group_by(school) %>% mutate(tot = sum(y16)) %>% arrange(desc(tot)) %>% 
   distinct(school,tot) %>% filter(tot != 0)
 
@@ -331,7 +352,7 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot_2016
 #fromschool 출력
-fromschool_plot_2016
+subchunkify(fromschool_plot_2016, 3, 3)
 
 cat("\n\n")
 cat("\n## 기타  \n")
@@ -349,9 +370,8 @@ print(etc_label)
 
 fromschool_data <- read_csv('./rawdatas/fromschool.csv')
 
-school_index <-1
 
-selected_data_fromschool <- fromschool_data %>% filter(schoolindex == 1) %>% 
+selected_data_fromschool <- fromschool_data %>% filter(schoolindex == the_number) %>% 
   group_by(school) %>% mutate(tot = sum(y17)) %>% arrange(desc(tot)) %>% 
   distinct(school,tot) %>% filter(tot != 0)
 
@@ -381,7 +401,7 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot_2017
 #fromschool 출력
-fromschool_plot_2017
+subchunkify(fromschool_plot_2017, 3, 3)
 
 cat("\n\n")
 cat("\n## 기타  \n")
@@ -392,6 +412,12 @@ etc_label <- selected_data_fromschool %>% tail(-5)
 etc_label = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
 
 print(etc_label)
+
+#pagebreak
+cat("\n\n\\pagebreak\n")
+
+}
+
 
 ```
 
