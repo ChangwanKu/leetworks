@@ -52,9 +52,9 @@ mojip_plot <- ggplot(entrance,aes(x='',y=value,fill=key)) + geom_bar(width = 1,s
   theme_minimal() + 
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), legend.position = 'bottom', 
-        legend.title = element_blank()) + 
+        legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light")) + 
   guides(fill = guide_legend(reverse = TRUE))+ 
-  geom_text(aes(label = value, y = text_y), nudge_x = .7) + 
+  geom_text(aes(label = value, y = text_y), nudge_x = .7, family="KoPubBatang Light") + 
   scale_fill_grey(start = 0.8, end = 0.2)
 
 # p + scale_fill_manual(values = c('#FFCCFF','#FF99CC','#FF3399','#FF33FF','#FF00FF','#FF00CC'))
@@ -90,15 +90,17 @@ sexdata <- read.csv('./rawdatas/sex.csv') %>%
 sexdata1 <- gather(sexdata) %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
 
 sexplot <- ggplot(sexdata1,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge', width = 0.5)+
-  geom_text(aes(x=year, y=value, label = value),vjust=-0.5, position = position_dodge(0.5)) + 
-  theme(legend.position="bottom", legend.direction="horizontal", legend.title = element_blank()) + 
+  geom_text(aes(x=year, y=value, label = value),vjust=-0.5, position = position_dodge(0.5),
+            family="KoPubBatang Light") + 
+  theme(legend.position="bottom", legend.direction="horizontal", 
+        legend.title = element_blank()) + 
   scale_fill_manual(values = c('#FF00FF','#FFCCFF'), labels = c('남','여')) +
   scale_x_discrete(labels=seq(2014,2017,1))+
   theme_minimal() + 
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), 
         panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), 
         panel.grid.minor.y = element_line(color='gray'), axis.ticks = element_blank(), 
-        axis.text.y = element_blank())
+        axis.text.y = element_blank(),legend.text = element_text(family="KoPubBatang Light"))
 sexplot
 
 
@@ -118,7 +120,8 @@ myschool1 <- gather(myschool) %>%
 
 myschoolbarplot <- ggplot(myschool1,aes(x=year, y=value, fill = group)) + 
   geom_bar(stat='identity', position = 'dodge', width = 0.5) + 
-  geom_text(aes(x=year, y=value, label = paste0(value)),vjust=-0.5, position = position_dodge(0.5)) + 
+  geom_text(aes(x=year, y=value, label = paste0(value)),vjust=-0.5, position = position_dodge(0.5),
+            family="KoPubBatang Light") + 
   scale_x_discrete(labels=seq(2014,2017,1)) +
   theme_minimal() + 
   theme(axis.ticks = element_blank(),axis.title = element_blank(), 
@@ -126,7 +129,7 @@ myschoolbarplot <- ggplot(myschool1,aes(x=year, y=value, fill = group)) +
         panel.grid.major.y = element_line(color = 'gray'), 
         panel.grid.minor.y = element_line(color='gray'),
         legend.position="bottom", legend.direction="horizontal", 
-        legend.title = element_blank()) + 
+        legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light")) + 
   scale_fill_manual(values = c('#FF00FF','#FFCCFF'), labels = c('자','타'))
 myschoolbarplot
 
@@ -147,7 +150,8 @@ foreign <- read.csv('./rawdatas/foreign.csv')  %>%
 #foreign
 
 foreign_plot <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity',width = 0.5, fill='#FF00FF',family="") + 
-  geom_text(aes(key,value,label = paste0(value)),vjust=-0.5) + scale_x_discrete(labels=seq(2014,2017,1)) + 
+  geom_text(aes(key,value,label = paste0(value)),vjust=-0.5, family="KoPubBatang Light") + 
+  scale_x_discrete(labels=seq(2014,2017,1),) + 
   theme_minimal() + 
   theme(axis.ticks = element_blank(),axis.title = element_blank(), 
         axis.text.y = element_blank(), panel.grid.major.x = element_blank(), 
@@ -177,9 +181,9 @@ age <- read.csv('./rawdatas/age.csv')%>%
   scale_x_discrete(labels=seq(2014,2017,1))+ 
   theme_minimal() + 
   theme(legend.position="bottom", legend.direction="horizontal", 
-        legend.title = element_blank(), axis.title.x = element_blank(), 
-        axis.title.y = element_blank(), panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_line(color = 'gray'), 
+        legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light"),
+        axis.title.x = element_blank(), axis.title.y = element_blank(), 
+        panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), 
         panel.grid.minor.y = element_line(color='gray'), 
         axis.ticks = element_blank(),
         text=element_text(family="KoPubBatang Light")) + 
@@ -224,7 +228,8 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), legend.position = 'none') + 
   scale_fill_brewer() +
-  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang light",size=2) ->
+  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=2)+
+  scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot
 #fromschool 출력
 fromschool_plot
