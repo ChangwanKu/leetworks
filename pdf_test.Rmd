@@ -1,15 +1,17 @@
 ---
-header-includes:
+geometry: margin=0.65in
+header-includes: 
 - \usepackage{kotex}
-
-output: 
-  pdf_document:
-    latex_engine: xelatex
-lang: korean
 mainfont: KoPubBatangLight
-geometry: margin=0.25in
-
+fontsize: 6pt
+output:
+  pdf_document:
+    includes:
+      in_header: header.tex
+    latex_engine: xelatex
 ---
+
+
 ```{r, include=FALSE, message = FALSE}
 knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = FALSE, dev ="cairo_pdf")
 
@@ -23,11 +25,9 @@ library(gridExtra)
 library(grid)
 library(downloader)
 library(grDevices)
+library(gtable)
 
-loadfonts()
 ```
-
-
 
 
 
@@ -35,34 +35,50 @@ loadfonts()
 
 
 
-subchunkify <- function(g, fig_height=7, fig_width=5) {
-  g_deparsed <- paste0(deparse(
-    function() {g}
-  ), collapse = '')
-  
-  sub_chunk <- paste0("
-  `","``{r sub_chunk_", floor(runif(1) * 10000), ", fig.height=", fig_height, ", fig.width=", fig_width, ", echo=FALSE}",
-                      "\n(", 
-                      g_deparsed
-                      , ")()",
-                      "\n`","``
-  ")
+
+subchunkify <- function(g, fig_height=7, fig_width=5,out_width=100,out_height=100) { 
+  g_deparsed <- paste0( deparse( function() {g} ), collapse = '' )
+  sub_chunk <- paste0("```{r sub_chunk_", 
+                      floor(runif(1) * 10000), 
+                      ", fig.height=",fig_height, 
+                      ", fig.width=", fig_width,
+                      ",out.width=\'", out_width,"%\'",
+                      ", echo=FALSE,fig.align='center'}",
+                      "\n(", g_deparsed, ")()",
+                      "\n``` ")
   
   cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
 }
 
+
+
+
+subchunkify_l <- function(g, fig_height=7, fig_width=5,out_width=100,out_height=100) { 
+  g_deparsed <- paste0( deparse( function() {g} ), collapse = '' )
+  sub_chunk <- paste0("```{r sub_chunk_", 
+                      floor(runif(1) * 10000), 
+                      ", fig.height=",fig_height, 
+                      ", fig.width=", fig_width,
+                      ",out.width=\'", out_width,"%\'",
+                      ", echo=FALSE}",
+                      "\n(", g_deparsed, ")()",
+                      "\n``` ")
+  
+  cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
+}
+
+legend_font <- 10
+geom_font <- 3
+x_axis_font <- 10
+
+
+
 school_name <- c("강원대", "건국대", "경북대", "경희대", "고려대", "동아대", "부산대", "서강대", "서울대", "서울시립대", "성균관대", "아주대", "연세대", "영남대", "원광대", "이화여대", "인하대", "전남대", "전북대", "제주대", "중앙대", "충남대", "충북대", "한국외대", "한양대")
 
 
-for (the_number in 1:1) {
-
-#####################################################
-#               1.    모집인원 파이 차트 +기본계획 표
-#####################################################
+for (the_number in 1:25) {
+# cat("\n***\n")
 cat("  \n#",school_name[the_number], "\n")
-cat("\n\n")
-cat("\n# 모집인원 + 기본계획 \n")
-cat("\n\n")
 
 entrance <- read.csv('./rawdatas/모집인원(16,17,18,19).csv') %>% 
   filter(schoolindex == the_number & year == 2018) %>% select(3:7) %>% rename()%>% gather() %>%
@@ -75,33 +91,74 @@ mojip_plot <- ggplot(entrance,aes(x='',y=value,fill=key)) + geom_bar(width = 1,s
   theme_minimal() + 
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), legend.position = 'bottom', 
-        legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light")) + 
+        plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
+        legend.title = element_blank(),legend.text = element_text(size=7,family="KoPubBatang Light"),
+        legend.margin=margin(0,0,0,0)) + 
   guides(fill = guide_legend(reverse = TRUE))+ 
-  geom_text(aes(label = value, y = text_y), nudge_x = .7, family="KoPubBatang Light") + 
-  scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))
+  geom_text(aes(label = value, y = text_y), nudge_x = .7, family="KoPubBatang Light",size=3) + 
+  scale_fill_manual(values = c("#FF7FFF", "#FF4CFF", "#FF33FF", "#FF00FF"))
 
 # p + scale_fill_manual(values = c('#FFCCFF','#FF3399','#FF00FF','#FF00CC'))
 
 
 #기본계획 표 : standard
 
-standard <- read.csv('./rawdatas/entrance_standard.csv') %>% 
-  filter(schoolindex == the_number & year == 2018) %>% 
-  select(level,leet,gpa,lang,doc,essay,interview,sum) %>% 
+standard <- read.csv('./rawdatas/entrance_standard.csv') %>%
+  filter(schoolindex == the_number & year == 2018) %>%
+  select(level,leet,gpa,lang,doc,essay,interview,sum) %>%
   replace(.,is.na(.),0)
-standard_table <- ggtexttable(standard, rows = NULL, theme = ttheme(base_size=5 ,tbody.style = tbody_style(fill = 'white'), ))
 
-# pie 랑 table 합체 
+# 
+# # pie 랑 table 합체 
+# 
+# print(ggarrange(mojip_plot,standard_table,ncol = 2, nrow = 1))
+#print(grid.arrange(mojip_plot, standard_table, ncol = 2))
 
-#ggarrange(mojip,standa rd_table,ncol = 2, nrow = 1)
-subchunkify(grid.arrange(mojip_plot, standard_table, ncol = 2), 2.3, 7)
+
+
+g<-tableGrob(standard, rows = NULL, theme = ttheme_minimal(padding = unit(c(4,22), 'mm')))
+
+g<-gtable_add_grob(g, grobs = segmentsGrob(x0 = unit(0,"npc"),
+                                           y0 = unit(0,"npc"),
+                                           x1 = unit(1,"npc"),
+                                           y1 = unit(0,"npc"),
+                                           gp = gpar(lwd = 2.0, col = "#FF7FFF")),
+                   t = 1, b = 1, l = 1, r = ncol(g))
+
+g<-gtable_add_grob(g, grobs = segmentsGrob(x0 = unit(0,"npc"),
+                                           y0 = unit(0,"npc"),
+                                           x1 = unit(1,"npc"),
+                                           y1 = unit(0,"npc"),
+                                           gp = gpar(lwd = 2.0, col = "#FF7FFF")),
+                   t = 1, b = 2, l = 1, r = ncol(g))
+
+
+g<-gtable_add_grob(g, grobs = segmentsGrob(x0 = unit(0,"npc"),
+                                           y0 = unit(0,"npc"),
+                                           x1 = unit(1,"npc"),
+                                           y1 = unit(0,"npc"),
+                                           gp = gpar(lwd = 2.0, col = "#FF7FFF")),
+                   t = 2, b = 3, l = 1, r = ncol(g))
+subchunkify_l(mojip_plot,1.8,1.8)
+subchunkify_l(ggarrange(g),2.5,7,70)
+# cat("\n\n\\pagebreak\n")
+
+
+
+
+
+
 
 ############################################
 #           2.sexplot 남녀비율 막대그래프
 ############################################
 cat("\n\n")
-cat("\n# 2. 남녀비율 \n")
-cat("\n\n")
+cat("\n####남녀비율 \n")
+# cat("\n\n")
+# cat("\n***\n")
+# cat("\n\n")
+
+
 
 sexdata <- read.csv('./rawdatas/sex.csv') %>% 
   rename(schoolindex = 癤퓋choolindex) %>% 
@@ -110,28 +167,38 @@ sexdata <- read.csv('./rawdatas/sex.csv') %>%
 
 sexdata1 <- gather(sexdata) %>% mutate(group=substr(key,1,1),year=substr(key,2,3))
 
-sexplot <- ggplot(sexdata1,aes(x=year, y=value, fill = group)) + geom_bar(stat='identity', position = 'dodge', width = 0.5)+
-  geom_text(aes(x=year, y=value, label = value),vjust=-0.5, position = position_dodge(0.5),
+
+sexplot <- ggplot(sexdata1,aes(x=year, y=value, fill = group)) + 
+  geom_bar(stat='identity', position = 'dodge', width = 0.5)+
+  geom_text(size=geom_font,aes(x=year, y=value, label = value),vjust=-0.5, position = position_dodge(0.5),
             family="KoPubBatang Light") + 
-  theme(legend.position="bottom", legend.direction="horizontal", 
-        legend.title = element_blank()) + 
   scale_fill_manual(values = c('#FF00FF','#FFCCFF'), labels = c('남','여')) +
   scale_x_discrete(labels=seq(2014,2017,1))+
   theme_minimal() + 
-  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), 
-        panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), 
-        panel.grid.minor.y = element_line(color='gray'), axis.ticks = element_blank(), 
-        axis.text.y = element_blank(),legend.text = element_text(family="KoPubBatang Light"))
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(size=x_axis_font,family="KoPubBatang Light"),
+        axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        plot.margin = margin(t = 0, r = 0, b = 5, l = 5, unit = "pt"),
+        panel.grid.major.x = element_blank(), 
+        panel.grid.major.y = element_line(color ='gray'), 
+        panel.grid.minor.y = element_blank(),  
+        axis.ticks = element_blank(), 
+        legend.title=element_blank(),legend.position="bottom", 
+        legend.direction="horizontal",legend.text = element_text(size=legend_font,family="KoPubBatang Light"))+
+  coord_fixed(ratio=3.5/((max(sexdata1$value)*12)),ylim = c(0, max(sexdata1$value)*1.25))
 
-subchunkify(sexplot, 2.3, 7)
 
+subchunkify(sexplot,1.5,7)
 
 ###########################################
 #       3.  myschoolbarplot 자교비율 막대그래프 
 ############################################
-cat("\n\n")
-cat("\n# 3. 자교비율 \n")
-cat("\n\n")
+# cat("\n\n")
+cat("\n####자교비율 \n")
+# cat("\n***\n")
+# cat("\n\n")
+
 
 myschool <- read.csv('./rawdatas/myschool.csv') %>%
   filter(癤퓋choolindex == the_number) %>% select(m14, o14, m15, o15, m16, o16, m17, o17)
@@ -141,55 +208,89 @@ myschool1 <- gather(myschool) %>%
 
 myschoolbarplot <- ggplot(myschool1,aes(x=year, y=value, fill = group)) + 
   geom_bar(stat='identity', position = 'dodge', width = 0.5) + 
-  geom_text(aes(x=year, y=value, label = paste0(value)),vjust=-0.5, position = position_dodge(0.5),
+  geom_text(size=geom_font,aes(x=year, y=value, label = paste0(value)),vjust=-0.5, position = position_dodge(0.5),
             family="KoPubBatang Light") + 
+  scale_fill_manual(values = c('#FF00FF','#FFCCFF'), labels = c('자','타'))+
   scale_x_discrete(labels=seq(2014,2017,1)) +
   theme_minimal() + 
-  theme(axis.ticks = element_blank(),axis.title = element_blank(), 
-        axis.text.y = element_blank(), panel.grid.major.x = element_blank(), 
-        panel.grid.major.y = element_line(color = 'gray'), 
-        panel.grid.minor.y = element_line(color='gray'),
-        legend.position="bottom", legend.direction="horizontal", 
-        legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light")) + 
-  scale_fill_manual(values = c('#FF00FF','#FFCCFF'), labels = c('자','타'))
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(size=x_axis_font,family="KoPubBatang Light"),
+        axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
+        panel.grid.major.x = element_blank(), 
+        panel.grid.major.y = element_line(color ='gray'), 
+        panel.grid.minor.y = element_blank(),  
+        legend.title=element_blank(),legend.position="bottom", 
+        legend.direction="horizontal",legend.text = element_text(size=legend_font,family="KoPubBatang Light")) +
+  coord_fixed(3.7/((max(myschool1$value)*10)),ylim = c(0, max(myschool1$value)*1.25))
 
-subchunkify(myschoolbarplot, 2.3, 7)
 
 
-#############################################
-#          4. FOREIGN BAR PLOT 외국대학 출신 학생수 그래프
-#############################################
 
-cat("\n\n")
-cat("\n#  외국대학 출신 학생수 \n")
-cat("\n\n")
+
+# 
+# 
+# print(4/((max(myschool1$value)*7)))
+# 
+# print(4/((max(sexdata1$value)*7)))
+
+
+
+# sexplot
+# print(sexplot)
+subchunkify(myschoolbarplot,1.5,7)
+
+
 
 foreign <- read.csv('./rawdatas/foreign.csv')  %>% 
   rename(schoolindex = 癤퓋choolindex) %>% 
   filter(schoolindex == the_number) %>% 
   select(f14, f15, f16, f17) %>% gather()
 
-#foreign
+#############################################
+#          4. FOREIGN BAR PLOT 외국대학 출신 학생수 그래프
+#############################################
+# cat("\n\n")
+cat("\n####외국대학 출신 학생수 \n")
+# cat("\n***\n")
 
-foreign_plot <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity',width = 0.5, fill='#FF00FF',family="") + 
-  geom_text(aes(key,value,label = paste0(value)),vjust=-0.5, family="KoPubBatang Light") + 
+
+foreign_plot <- ggplot(foreign,aes(key,value)) + geom_bar(stat='identity',width = 0.5, fill='#FF00FF') + 
+  geom_text(size=geom_font,aes(key,value,label = paste0(value)),vjust=-0.5, family="KoPubBatang Light") + 
   scale_x_discrete(labels=seq(2014,2017,1)) + 
   theme_minimal() + 
-  theme(axis.ticks = element_blank(),axis.title = element_blank(), 
-        axis.text.y = element_blank(), panel.grid.major.x = element_blank(), 
-        panel.grid.major.y = element_line(color = 'gray'), 
-        panel.grid.minor.y = element_line(color='gray'))
-subchunkify(foreign_plot, 2.3, 7)
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(size=x_axis_font,family="KoPubBatang Light"),
+        axis.title.y = element_blank(), 
+        axis.text.y = element_blank(),
+        plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
+        panel.grid.major.x = element_blank(), 
+        panel.grid.major.y = element_line(color ='gray'), 
+        panel.grid.minor.y = element_blank(),
+        legend.title=element_blank(),legend.position="bottom", 
+        legend.direction="horizontal",legend.text = element_text(size=legend_font,family="KoPubBatang Light"))+
+  coord_fixed(ratio= 0.5/max(foreign$value+1)*1.2, ylim = c(0, max(foreign$value+0.75)*1.15))
 
 
+subchunkify(foreign_plot,1.3,6)
+
+cat("\n\n\\pagebreak\n")
+
+
+
+
+
+  
 
 ##############################################
 #           5.age rate plot 연령비율 그래프
 ###########################################
 
-cat("\n\n")
-cat("\n# 연령 비율 \n")
-cat("\n\n")
+
+cat("\n## 연령 비율 \n")
+# cat("\n***\n")
+
 
 
 age <- read.csv('./rawdatas/age.csv')%>% 
@@ -202,25 +303,30 @@ age <- read.csv('./rawdatas/age.csv')%>%
   scale_x_discrete(labels=seq(2014,2017,1))+ 
   theme_minimal() + 
   theme(legend.position="bottom", legend.direction="horizontal", 
-        legend.title = element_blank(),legend.text = element_text(family="KoPubBatang Light"),
+        legend.title = element_blank(),legend.text = element_text(size=legend_font,family="KoPubBatang Light"),
         axis.title.x = element_blank(), axis.title.y = element_blank(), 
+        plot.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "pt"),
+        axis.text.x = element_text(size=x_axis_font,family="KoPubBatang Light"),
         panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(color = 'gray'), 
-        panel.grid.minor.y = element_line(color='gray'), 
-        axis.ticks = element_blank(),
-        text=element_text(family="KoPubBatang Light")) + 
+        panel.grid.minor.y = element_blank(),
+        axis.ticks = element_blank(),text=element_text(family="KoPubBatang Light")) + 
   scale_fill_manual(values = c('#FF00FF','#FF99ff','#ffccff'), 
                     labels = c('29세 이상','26~28세','25세 이하')) +
-  labs(caption = '단위 : %')
-subchunkify(age, 2.3, 7)
+  labs(caption = '단위 : %')+
+  coord_fixed(ratio=0.0065,ylim = c(0, 100))
+subchunkify(age,2,8)
+#age
+
 
 
 
 ############################################
 #             6. FROM SCHOOL 출신학교 현황 그래프 및 글  
 ############################################
-cat("\n\n")
-cat("\n# 총 출신학교 현황  \n")
-cat("\n\n")
+
+cat("\n## 총 출신학교 현황  \n")
+# cat("\n***\n")
+
 fromschool_data <- read_csv('./rawdatas/fromschool.csv')
 
 
@@ -248,28 +354,38 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   theme_minimal() + 
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), legend.position = 'none') + 
-  scale_fill_brewer() +
-  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=2)+
+  geom_text(size=geom_font,aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light")+
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot
 #fromschool 출력
-subchunkify(fromschool_plot, 3, 3)
-cat("\n\n")
+#fromschool_plot
+#print(fromschool_plot)
+subchunkify(fromschool_plot,3,3)
+
+
+
+
+
+
+# cat("\n\n")
+# cat("\n***\n")
 cat("\n## 기타  \n")
-cat("\n\n")
+# cat("\n***\n")
+# cat("\n\n")
 #학교 숫자넣기
 etc_label <- selected_data_fromschool %>% tail(-5)
 a = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
-
-print(a)
-
-
+writeLines(a)
+# 
+# cat("\n***\n")
+cat("\n\n\\pagebreak\n")
 ############################################
 #           7.     FROM SCHOOL 출신학교 현황 그래프 및 글  
 ############################################
-cat("\n\n")
-cat("\n# 최근 4년간 출신 학부 현황  \n")
-cat("\n\n")
+
+cat("\n## 최근 4년간 출신 학부 현황  \n")
+# cat("\n***\n")
+
 
 
 fromschool_data <- read_csv('./rawdatas/fromschool.csv')
@@ -300,22 +416,26 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   theme_minimal() + 
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), legend.position = 'none',
-         plot.title = element_text(hjust = 0.5,family="KoPubBatang Light")) + 
-  scale_fill_brewer() +
-  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=2)+
+        plot.title = element_text(hjust = 0.5,family="KoPubBatang Light")) + 
+  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=geom_font)+
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot_2015
 #fromschool 출력
-subchunkify(fromschool_plot_2015, 3, 3)
+#fromschool_plot_2015
+#print(fromschool_plot_2015)
+subchunkify(fromschool_plot_2015,2.7,2.7)
 
-cat("\n\n")
+# cat("\n***\n")
 cat("\n## 기타  \n")
-cat("\n\n")
+# cat("\n***\n")
+
 
 etc_label <- selected_data_fromschool %>% tail(-5)
 etc_label = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
 
-print(etc_label)
+writeLines(etc_label)
+# cat("\n***\n")
+
 ############################################
 #       8.    FROM SCHOOL 출신학교 현황 그래프 및 글  
 ############################################
@@ -347,23 +467,26 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   theme_minimal() +
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), legend.position = 'none',
-         plot.title = element_text(hjust = 0.5,family="KoPubBatang Light")) + 
-  scale_fill_brewer() +
-  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=2)+
+        plot.title = element_text(hjust = 0.5,family="KoPubBatang Light")) + 
+  
+  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=geom_font)+
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot_2016
 #fromschool 출력
-subchunkify(fromschool_plot_2016, 3, 3)
-
-cat("\n\n")
+#fromschool_plot_2016
+#print(fromschool_plot_2016)
+subchunkify(fromschool_plot_2016,2.7,2.7)
+# cat("\n***\n")
 cat("\n## 기타  \n")
-cat("\n\n")
+# cat("\n***\n")
+
 
 etc_label <- selected_data_fromschool %>% tail(-5)
 etc_label = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
 
-print(etc_label)
-
+writeLines(etc_label)
+# cat("\n***\n")
+cat("\n\n\\pagebreak\n")
 
 ############################################
 #         9.     FROM SCHOOL 출신학교 현황 그래프 및 글  
@@ -396,28 +519,33 @@ ggplot(from,aes(x='',y=tot,fill=school)) +
   theme_minimal() + 
   theme(axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), legend.position = 'none',
-         plot.title = element_text(hjust = 0.5,family="KoPubBatang Light")) +
-  scale_fill_brewer() +
-  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=2)+
+        plot.title = element_text(hjust = 0.5,family="KoPubBatang Light")) +
+  
+  geom_text(aes(label=paste(school,tot), y = text_y), nudge_x = 0.7, family="KoPubBatang Light",size=geom_font)+
   scale_fill_manual(values = c("#FF7FFF", "#FF66FF", "#FF4CFF", "#FF33FF", "#FF1CFF", "#FF00FF"))->
   fromschool_plot_2017
 #fromschool 출력
-subchunkify(fromschool_plot_2017, 3, 3)
+#fromschool_plot_2017
+subchunkify(fromschool_plot_2017,3,3)
 
-cat("\n\n")
+# cat("\n***\n")
 cat("\n## 기타  \n")
-cat("\n\n")
+# cat("\n***\n")
 
 
 etc_label <- selected_data_fromschool %>% tail(-5)
 etc_label = paste(etc_label$school,'(',etc_label$tot,')', collapse = ', ')
 
-print(etc_label)
+writeLines(etc_label)
+# cat("\n***\n")
 
 #pagebreak
 cat("\n\n\\pagebreak\n")
 
 }
+
+
+
 
 
 ```
