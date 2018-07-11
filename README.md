@@ -5,4 +5,6 @@
 강원대학교
 
 
-![agebar](https://user-images.githubusercontent.com/34765298/42555223-7ffca7ae-8522-11e8-8c8a-e1df1c3ccd41.png )
+연령 비율             |  출신학교 
+:-------------------------:|:-------------------------:
+![](https://user-images.githubusercontent.com/34765298/42555223-7ffca7ae-8522-11e8-8c8a-e1df1c3ccd41.png)  |  ![](https://user-images.githubusercontent.com/34765298/42556396-6ec2c708-8526-11e8-9270-82358e98502a.png)
